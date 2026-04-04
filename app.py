@@ -10,7 +10,7 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 st.set_page_config(page_title="Deteksi LSD Sapi", page_icon="🐄")
 
 st.title("🛡️ Deteksi Penyakit LSD Sapi")
-st.write("by Aidil Putra Samudra")
+st.caption("by Aidil Putra Samudra")
 st.write("Aplikasi ini menggunakan arsitektur EfficientNet-B5 untuk mengidentifikasi penyakit Lumpy Skin Disease.")
 
 # ===============================
@@ -54,6 +54,16 @@ def load_my_model():
 model = load_my_model()
 
 # ===============================
+# STATUS MODEL
+# ===============================
+if model is not None:
+    st.success("Model berhasil dimuat dan siap digunakan")
+else:
+    st.error("Model gagal dimuat")
+
+st.divider()
+
+# ===============================
 # LABEL
 # ===============================
 CLASS_NAMES = ['Sehat (Healthy)', 'Terinfeksi LSD (Lumpy Skin)']
@@ -64,11 +74,9 @@ CLASS_NAMES = ['Sehat (Healthy)', 'Terinfeksi LSD (Lumpy Skin)']
 def is_valid_image(image):
     img = np.array(image)
 
-    # cek variasi warna (tekstur)
     if np.std(img) < 25:
         return False
 
-    # cek brightness (hindari terlalu gelap/terang)
     mean_val = np.mean(img)
     if mean_val < 50 or mean_val > 200:
         return False
@@ -105,23 +113,22 @@ def predict(image_data, model):
     return result, confidence, image
 
 # ===============================
-# PENJELASAN MODEL
+# EXPANDER (BIAR RAPI)
 # ===============================
-st.subheader("Tentang Model")
-st.write("""
-Model ini menggunakan arsitektur EfficientNet-B5 yang merupakan bagian dari Convolutional Neural Network (CNN).
-Model dilatih untuk mengklasifikasikan citra kulit sapi menjadi dua kategori: sehat dan terinfeksi Lumpy Skin Disease (LSD).
-""")
+with st.expander("📘 Penjelasan Model"):
+    st.write("""
+    Model ini menggunakan arsitektur EfficientNet-B5 yang merupakan bagian dari Convolutional Neural Network (CNN).
+    Model dilatih untuk mengklasifikasikan citra kulit sapi menjadi dua kategori: sehat dan terinfeksi Lumpy Skin Disease (LSD).
+    """)
 
-# ===============================
-# PANDUAN
-# ===============================
-st.subheader("Panduan Penggunaan")
-st.write("""
-- Gunakan gambar kulit sapi yang jelas
-- Fokus pada area yang menunjukkan gejala
-- Hindari gambar blur atau terlalu jauh
-""")
+with st.expander("📖 Panduan Penggunaan"):
+    st.write("""
+    - Gunakan gambar kulit sapi yang jelas
+    - Fokus pada area yang menunjukkan gejala
+    - Hindari gambar blur atau terlalu jauh
+    """)
+
+st.divider()
 
 # ===============================
 # UPLOAD GAMBAR
@@ -130,13 +137,11 @@ uploaded_file = st.file_uploader("Upload foto tekstur kulit sapi...", type=["jpg
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="Foto yang dianalisis", use_container_width=True)
 
     if model is not None:
         if st.button("Analisis Gambar"):
             with st.spinner("Sedang mendiagnosis..."):
 
-                # VALIDASI TAMBAHAN
                 if not is_valid_image(image):
                     st.error("Gambar tidak sesuai (kemungkinan bukan kulit sapi).")
                     st.warning("Silakan upload gambar dengan tekstur kulit sapi yang jelas.")
@@ -144,43 +149,53 @@ if uploaded_file is not None:
 
                 label, score, processed_image = predict(image, model)
 
-                st.write("---")
+                st.divider()
 
-                # tampilkan preprocessing
-                st.image(processed_image, caption="Gambar setelah preprocessing (456x456)")
+                # ===============================
+                # LAYOUT 2 KOLOM
+                # ===============================
+                col1, col2 = st.columns(2)
 
-                # confidence
+                with col1:
+                    st.image(image, caption="Gambar Input", use_container_width=True)
+
+                with col2:
+                    st.image(processed_image, caption="Preprocessing (456x456)")
+
                 st.subheader("Hasil Prediksi")
+
+                # METRIC + PROGRESS
+                st.metric(label="Tingkat Keyakinan", value=f"{score:.2f}%")
                 st.progress(int(score))
 
-                # VALIDASI BERDASARKAN CONFIDENCE
                 if score < 60:
                     st.error("Gambar tidak valid atau model tidak yakin.")
                     st.warning("Silakan gunakan gambar yang lebih jelas.")
                 else:
                     if "LSD" in label:
                         st.error(f"Hasil: {label}")
-                        st.warning(f"Tingkat Keyakinan: {score:.2f}%")
-                        st.write("Saran: Segera hubungi dokter hewan dan pisahkan sapi dari kelompoknya.")
+                        st.warning("Segera lakukan penanganan medis.")
                     else:
                         st.success(f"Hasil: {label}")
-                        st.info(f"Tingkat Keyakinan: {score:.2f}%")
 
     else:
         st.warning("Model belum siap, silakan cek log error.")
 
+st.divider()
+
 # ===============================
-# INFORMASI LSD
+# INFORMASI LSD (EXPANDER)
 # ===============================
-st.subheader("Tentang Penyakit LSD")
-st.write("""
-Lumpy Skin Disease (LSD) adalah penyakit virus pada sapi yang ditandai dengan munculnya benjolan pada kulit,
-demam, penurunan produksi susu, dan dapat menyebabkan kerugian ekonomi yang signifikan pada peternak.
-""")
+with st.expander("📚 Tentang Penyakit LSD"):
+    st.write("""
+    Lumpy Skin Disease (LSD) adalah penyakit virus pada sapi yang ditandai dengan munculnya benjolan pada kulit,
+    demam, penurunan produksi susu, dan dapat menyebabkan kerugian ekonomi yang signifikan.
+    """)
 
 # ===============================
 # DISCLAIMER
 # ===============================
-st.warning("""
-Hasil prediksi ini hanya sebagai alat bantu dan tidak menggantikan diagnosis dokter hewan profesional.
-""")
+st.warning("Hasil prediksi ini hanya sebagai alat bantu dan tidak menggantikan diagnosis dokter hewan.")
+
+st.divider()
+st.caption("© 2026 - Sistem Deteksi LSD Sapi | Skripsi Teknik Informatika")
