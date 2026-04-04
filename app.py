@@ -134,7 +134,7 @@ if uploaded_file is not None:
 
     if model is not None:
         if st.button("Analisis Gambar"):
-    with st.spinner("Sedang mendiagnosis..."):
+        with st.spinner("Sedang mendiagnosis..."):
 
         # VALIDASI TAMBAHAN
         if not is_valid_image(image):
