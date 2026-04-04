@@ -14,13 +14,13 @@ st.write("by Aidil Putra Samudra")
 st.write("Aplikasi ini menggunakan arsitektur EfficientNet-B5 untuk mengidentifikasi penyakit Lumpy Skin Disease.")
 
 # ===============================
-# 🔗 LINK MODEL (HUGGING FACE)
+# LINK MODEL (HUGGING FACE)
 # ===============================
 MODEL_URL = "https://huggingface.co/spaces/samudra19/efficientnetb5/resolve/main/model_lsd_sapi.keras"
 MODEL_PATH = "model_lsd_sapi.keras"
 
 # ===============================
-# 📥 DOWNLOAD MODEL
+# DOWNLOAD MODEL
 # ===============================
 def download_model():
     if not os.path.exists(MODEL_PATH):
@@ -36,7 +36,7 @@ def download_model():
     return True
 
 # ===============================
-# 🧠 LOAD MODEL
+# LOAD MODEL
 # ===============================
 @st.cache_resource
 def load_my_model():
@@ -54,12 +54,29 @@ def load_my_model():
 model = load_my_model()
 
 # ===============================
-# 🏷️ LABEL
+# LABEL
 # ===============================
 CLASS_NAMES = ['Sehat (Healthy)', 'Terinfeksi LSD (Lumpy Skin)']
 
 # ===============================
-# 🔍 PREDIKSI
+# VALIDASI INPUT SEDERHANA
+# ===============================
+def is_valid_image(image):
+    img = np.array(image)
+
+    # cek variasi warna (tekstur)
+    if np.std(img) < 25:
+        return False
+
+    # cek brightness (hindari terlalu gelap/terang)
+    mean_val = np.mean(img)
+    if mean_val < 50 or mean_val > 200:
+        return False
+
+    return True
+
+# ===============================
+# PREDIKSI
 # ===============================
 def predict(image_data, model):
     image = image_data.convert("RGB")
@@ -88,7 +105,7 @@ def predict(image_data, model):
     return result, confidence, image
 
 # ===============================
-# 📘 PENJELASAN MODEL
+# PENJELASAN MODEL
 # ===============================
 st.subheader("Tentang Model")
 st.write("""
@@ -97,7 +114,7 @@ Model dilatih untuk mengklasifikasikan citra kulit sapi menjadi dua kategori: se
 """)
 
 # ===============================
-# 📖 PANDUAN
+# PANDUAN
 # ===============================
 st.subheader("Panduan Penggunaan")
 st.write("""
@@ -107,7 +124,7 @@ st.write("""
 """)
 
 # ===============================
-# 📤 UPLOAD GAMBAR
+# UPLOAD GAMBAR
 # ===============================
 uploaded_file = st.file_uploader("Upload foto tekstur kulit sapi...", type=["jpg", "jpeg", "png"])
 
@@ -117,20 +134,27 @@ if uploaded_file is not None:
 
     if model is not None:
         if st.button("Analisis Gambar"):
-            with st.spinner("Sedang mendiagnosis..."):
-                label, score, processed_image = predict(image, model)
+    with st.spinner("Sedang mendiagnosis..."):
+
+        # VALIDASI TAMBAHAN
+        if not is_valid_image(image):
+            st.error("Gambar tidak sesuai (kemungkinan bukan kulit sapi).")
+            st.warning("Silakan upload gambar dengan tekstur kulit sapi yang jelas.")
+            st.stop()
+
+        label, score, processed_image = predict(image, model)
 
                 st.write("---")
 
-                # 🔍 tampilkan preprocessing
+                # tampilkan preprocessing
                 st.image(processed_image, caption="Gambar setelah preprocessing (456x456)")
 
-                # 📊 confidence
+                # confidence
                 st.subheader("Hasil Prediksi")
                 st.progress(int(score))
 
                 # ===============================
-                # 🚨 VALIDASI INPUT (TAMBAHAN PENTING)
+                # VALIDASI INPUT (TAMBAHAN PENTING)
                 # ===============================
                 if score < 60:
                     st.error("Gambar tidak valid atau bukan kulit sapi.")
@@ -150,7 +174,7 @@ if uploaded_file is not None:
         st.warning("Model belum siap, silakan cek log error.")
 
 # ===============================
-# 📚 INFORMASI LSD
+# INFORMASI LSD
 # ===============================
 st.subheader("Tentang Penyakit LSD")
 st.write("""
@@ -159,7 +183,7 @@ demam, penurunan produksi susu, dan dapat menyebabkan kerugian ekonomi yang sign
 """)
 
 # ===============================
-# ⚠️ DISCLAIMER
+# DISCLAIMER
 # ===============================
 st.warning("""
 Hasil prediksi ini hanya sebagai alat bantu dan tidak menggantikan diagnosis dokter hewan profesional.
