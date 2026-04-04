@@ -63,23 +63,16 @@ CLASS_NAMES = ['Sehat (Healthy)', 'Terinfeksi LSD (Lumpy Skin)']
 # ===============================
 def predict(image_data, model):
     image = image_data.convert("RGB")
-    image = image.resize((456, 456))  # sesuai EfficientNetB5
+    image = image.resize((456, 456))
 
     img_array = np.array(image)
     img_array = np.expand_dims(img_array, axis=0)
-
-    # 🔥 preprocessing yang BENAR
     img_array = preprocess_input(img_array)
 
     prediction = model.predict(img_array)
 
-    # ===== DEBUG (boleh dihapus saat final) =====
-    # st.write("Debug - Raw prediction:", prediction)
-
     if prediction.shape[-1] == 1:
         prob = float(prediction[0][0])
-        # st.write("Debug - Prob:", prob)
-
         THRESHOLD = 0.5  
 
         if prob >= THRESHOLD:
@@ -92,7 +85,26 @@ def predict(image_data, model):
         result = CLASS_NAMES[np.argmax(prediction)]
         confidence = float(np.max(prediction)) * 100
 
-    return result, confidence
+    return result, confidence, image
+
+# ===============================
+# 📘 PENJELASAN MODEL
+# ===============================
+st.subheader("Tentang Model")
+st.write("""
+Model ini menggunakan arsitektur EfficientNet-B5 yang merupakan bagian dari Convolutional Neural Network (CNN).
+Model dilatih untuk mengklasifikasikan citra kulit sapi menjadi dua kategori: sehat dan terinfeksi Lumpy Skin Disease (LSD).
+""")
+
+# ===============================
+# 📖 PANDUAN
+# ===============================
+st.subheader("Panduan Penggunaan")
+st.write("""
+- Gunakan gambar kulit sapi yang jelas
+- Fokus pada area yang menunjukkan gejala
+- Hindari gambar blur atau terlalu jauh
+""")
 
 # ===============================
 # 📤 UPLOAD GAMBAR
@@ -106,9 +118,19 @@ if uploaded_file is not None:
     if model is not None:
         if st.button("Analisis Gambar"):
             with st.spinner("Sedang mendiagnosis..."):
-                label, score = predict(image, model)
+                label, score, processed_image = predict(image, model)
 
                 st.write("---")
+
+                # 🔍 tampilkan preprocessing
+                st.image(processed_image, caption="Gambar setelah preprocessing (456x456)")
+
+                # 📊 confidence
+                st.subheader("Hasil Prediksi")
+                st.progress(int(score))
+
+                if score < 60:
+                    st.warning("Model memiliki tingkat keyakinan rendah terhadap hasil ini.")
 
                 if "LSD" in label:
                     st.error(f"Hasil: {label}")
@@ -119,3 +141,19 @@ if uploaded_file is not None:
                     st.info(f"Tingkat Keyakinan: {score:.2f}%")
     else:
         st.warning("Model belum siap, silakan cek log error.")
+
+# ===============================
+# 📚 INFORMASI LSD
+# ===============================
+st.subheader("Tentang Penyakit LSD")
+st.write("""
+Lumpy Skin Disease (LSD) adalah penyakit virus pada sapi yang ditandai dengan munculnya benjolan pada kulit,
+demam, penurunan produksi susu, dan dapat menyebabkan kerugian ekonomi yang signifikan pada peternak.
+""")
+
+# ===============================
+# ⚠️ DISCLAIMER
+# ===============================
+st.warning("""
+Hasil prediksi ini hanya sebagai alat bantu dan tidak menggantikan diagnosis dokter hewan profesional.
+""")
