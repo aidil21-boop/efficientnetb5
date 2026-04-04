@@ -61,7 +61,8 @@ CLASS_NAMES = ['Sehat (Healthy)', 'Terinfeksi LSD (Lumpy Skin)']
 # ===============================
 def predict(image_data, model):
     image = image_data.convert("RGB")
-    image = image.resize((224, 224))
+    image_size = 456
+    image = image.resize((image_size, image_size))
 
     img_array = np.array(image)
     img_array = np.expand_dims(img_array, axis=0)
