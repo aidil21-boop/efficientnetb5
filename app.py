@@ -160,12 +160,9 @@ if uploaded_file is not None:
                 # ===============================
                 # HASIL ANALISIS (SETELAH KLIK)
                 # ===============================
-                col1, col2 = st.columns(2)
+                col1 = st.columns(2)
 
                 with col1:
-                    st.image(image, caption="Gambar Input", use_container_width=True)
-
-                with col2:
                     st.image(processed_image, caption="Preprocessing (456x456)")
 
                 st.subheader("Hasil Prediksi")
