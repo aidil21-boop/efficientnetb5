@@ -133,48 +133,67 @@ st.divider()
 # ===============================
 # UPLOAD GAMBAR
 # ===============================
-uploaded_file = st.file_uploader("Upload foto tekstur kulit sapi...", type=["jpg", "jpeg", "png"])
+uploaded_files = st.file_uploader(
+    "Upload maksimal 10 gambar kulit sapi...",
+    type=["jpg", "jpeg", "png"],
+    accept_multiple_files=True
+)
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
+if uploaded_files:
+    if len(uploaded_files) > 10:
+        st.error("Maksimal 10 gambar!")
+        st.stop()
 
-    # PREVIEW INPUT
+    # PREVIEW SEMUA GAMBAR
     st.subheader("Preview Gambar")
-    st.image(image, caption="Gambar yang diupload", use_container_width=True)
+    for i, file in enumerate(uploaded_files):
+        st.image(Image.open(file), caption=f"Gambar {i+1}", use_container_width=True)
 
     if model is not None:
-        if st.button("Analisis Gambar"):
+        if st.button("Analisis Semua Gambar"):
             with st.spinner("Sedang mendiagnosis..."):
 
-                # VALIDASI INPUT
-                if not is_valid_image(image):
-                    st.error("Gambar tidak sesuai (kemungkinan bukan kulit sapi).")
-                    st.warning("Silakan upload gambar dengan tekstur kulit sapi yang jelas.")
-                    st.stop()
+                results = []
 
-                label, score, processed_image = predict(image, model)
+                for idx, file in enumerate(uploaded_files):
+                    image = Image.open(file)
+
+                    # VALIDASI INPUT
+                    if not is_valid_image(image):
+                        results.append(("Tidak Valid", 0))
+                        continue
+
+                    label, score, processed_image = predict(image, model)
+                    results.append((label, score))
+
+                    st.divider()
+                    st.subheader(f"Hasil Gambar {idx+1}")
+
+                    st.image(processed_image, caption="Gambar yang dianalisis", use_container_width=True)
+
+                    st.metric(label="Tingkat Keyakinan", value=f"{score:.2f}%")
+                    st.progress(int(score))
+
+                    if score < 60:
+                        st.warning("Model tidak yakin terhadap hasil ini")
+                    else:
+                        if "LSD" in label:
+                            st.error(f"Hasil: {label}")
+                        else:
+                            st.success(f"Hasil: {label}")
+
+                # ===============================
+                # 📊 RINGKASAN HASIL
+                # ===============================
+                sehat = sum(1 for r in results if "Sehat" in r[0])
+                sakit = sum(1 for r in results if "LSD" in r[0])
+                invalid = sum(1 for r in results if "Tidak Valid" in r[0])
 
                 st.divider()
-
-                # ===============================
-                # HASIL ANALISIS
-                # ===============================
-                st.subheader("Hasil Analisis")
-
-                st.image(processed_image, caption="Gambar yang dianalisis (456x456)", use_container_width=True)
-
-                st.metric(label="Tingkat Keyakinan", value=f"{score:.2f}%")
-                st.progress(int(score))
-
-                if score < 60:
-                    st.error("Gambar tidak valid atau model tidak yakin.")
-                    st.warning("Silakan gunakan gambar yang lebih jelas.")
-                else:
-                    if "LSD" in label:
-                        st.error(f"Hasil: {label}")
-                        st.warning("Segera lakukan penanganan medis.")
-                    else:
-                        st.success(f"Hasil: {label}")
+                st.subheader("📊 Ringkasan Hasil")
+                st.write(f"Jumlah Sehat: {sehat}")
+                st.write(f"Jumlah Terinfeksi LSD: {sakit}")
+                st.write(f"Tidak Valid: {invalid}")
 
     else:
         st.warning("Model belum siap, silakan cek log error.")
