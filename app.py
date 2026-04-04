@@ -136,13 +136,13 @@ if uploaded_file is not None:
         if st.button("Analisis Gambar"):
             with st.spinner("Sedang mendiagnosis..."):
 
-        # VALIDASI TAMBAHAN
-        if not is_valid_image(image):
-            st.error("Gambar tidak sesuai (kemungkinan bukan kulit sapi).")
-            st.warning("Silakan upload gambar dengan tekstur kulit sapi yang jelas.")
-            st.stop()
+                # VALIDASI TAMBAHAN
+                if not is_valid_image(image):
+                    st.error("Gambar tidak sesuai (kemungkinan bukan kulit sapi).")
+                    st.warning("Silakan upload gambar dengan tekstur kulit sapi yang jelas.")
+                    st.stop()
 
-        label, score, processed_image = predict(image, model)
+                label, score, processed_image = predict(image, model)
 
                 st.write("---")
 
@@ -153,14 +153,10 @@ if uploaded_file is not None:
                 st.subheader("Hasil Prediksi")
                 st.progress(int(score))
 
-                # ===============================
-                # VALIDASI INPUT (TAMBAHAN PENTING)
-                # ===============================
+                # VALIDASI BERDASARKAN CONFIDENCE
                 if score < 60:
-                    st.error("Gambar tidak valid atau bukan kulit sapi.")
-                    st.warning("Model tidak cukup yakin untuk memberikan prediksi yang akurat.")
-                    st.info("Silakan upload gambar kulit sapi yang lebih jelas dan sesuai.")
-                
+                    st.error("Gambar tidak valid atau model tidak yakin.")
+                    st.warning("Silakan gunakan gambar yang lebih jelas.")
                 else:
                     if "LSD" in label:
                         st.error(f"Hasil: {label}")
