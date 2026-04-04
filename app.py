@@ -138,10 +138,16 @@ uploaded_file = st.file_uploader("Upload foto tekstur kulit sapi...", type=["jpg
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
 
+    # TAMPILKAN GAMBAR LANGSUNG
+    st.subheader("Preview Gambar")
+    st.image(image, caption="Gambar yang diupload", use_container_width=True)
+
+    # BARU MUNCUL BUTTON
     if model is not None:
         if st.button("Analisis Gambar"):
             with st.spinner("Sedang mendiagnosis..."):
 
+                # VALIDASI INPUT
                 if not is_valid_image(image):
                     st.error("Gambar tidak sesuai (kemungkinan bukan kulit sapi).")
                     st.warning("Silakan upload gambar dengan tekstur kulit sapi yang jelas.")
@@ -152,7 +158,7 @@ if uploaded_file is not None:
                 st.divider()
 
                 # ===============================
-                # LAYOUT 2 KOLOM
+                # HASIL ANALISIS (SETELAH KLIK)
                 # ===============================
                 col1, col2 = st.columns(2)
 
@@ -164,7 +170,6 @@ if uploaded_file is not None:
 
                 st.subheader("Hasil Prediksi")
 
-                # METRIC + PROGRESS
                 st.metric(label="Tingkat Keyakinan", value=f"{score:.2f}%")
                 st.progress(int(score))
 
