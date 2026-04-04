@@ -113,7 +113,7 @@ def predict(image_data, model):
     return result, confidence, image
 
 # ===============================
-# EXPANDER (BIAR RAPI)
+# EXPANDER
 # ===============================
 with st.expander("📘 Penjelasan Model"):
     st.write("""
@@ -138,11 +138,10 @@ uploaded_file = st.file_uploader("Upload foto tekstur kulit sapi...", type=["jpg
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
 
-    # TAMPILKAN GAMBAR LANGSUNG
+    # PREVIEW INPUT
     st.subheader("Preview Gambar")
     st.image(image, caption="Gambar yang diupload", use_container_width=True)
 
-    # BARU MUNCUL BUTTON
     if model is not None:
         if st.button("Analisis Gambar"):
             with st.spinner("Sedang mendiagnosis..."):
@@ -158,14 +157,11 @@ if uploaded_file is not None:
                 st.divider()
 
                 # ===============================
-                # HASIL ANALISIS (SETELAH KLIK)
+                # HASIL ANALISIS
                 # ===============================
-                col1 = st.columns(2)
+                st.subheader("Hasil Analisis")
 
-                with col1:
-                    st.image(processed_image, caption="Preprocessing (456x456)")
-
-                st.subheader("Hasil Prediksi")
+                st.image(processed_image, caption="Gambar yang dianalisis (456x456)", use_container_width=True)
 
                 st.metric(label="Tingkat Keyakinan", value=f"{score:.2f}%")
                 st.progress(int(score))
@@ -186,7 +182,7 @@ if uploaded_file is not None:
 st.divider()
 
 # ===============================
-# INFORMASI LSD (EXPANDER)
+# INFORMASI LSD
 # ===============================
 with st.expander("📚 Tentang Penyakit LSD"):
     st.write("""
