@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import requests
 import os
+import pandas as pd
 
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
@@ -14,7 +15,7 @@ st.caption("by Aidil Putra Samudra")
 st.write("Aplikasi ini menggunakan arsitektur EfficientNet-B5 untuk mengidentifikasi penyakit Lumpy Skin Disease.")
 
 # ===============================
-# LINK MODEL (HUGGING FACE)
+# LINK MODEL
 # ===============================
 MODEL_URL = "https://huggingface.co/spaces/samudra19/efficientnetb5/resolve/main/model_lsd_sapi.keras"
 MODEL_PATH = "model_lsd_sapi.keras"
@@ -43,7 +44,6 @@ def load_my_model():
     success = download_model()
     if not success:
         return None
-
     try:
         model = tf.keras.models.load_model(MODEL_PATH, compile=False)
         return model
@@ -69,19 +69,29 @@ st.divider()
 CLASS_NAMES = ['Sehat (Healthy)', 'Terinfeksi LSD (Lumpy Skin)']
 
 # ===============================
-# VALIDASI INPUT SEDERHANA
+# VALIDASI INPUT
 # ===============================
 def is_valid_image(image):
     img = np.array(image)
-
     if np.std(img) < 25:
         return False
-
     mean_val = np.mean(img)
     if mean_val < 50 or mean_val > 200:
         return False
-
     return True
+
+# ===============================
+# LABEL CONFIDENCE
+# ===============================
+def confidence_label(score):
+    if score >= 85:
+        return "Sangat Tinggi"
+    elif score >= 70:
+        return "Tinggi"
+    elif score >= 60:
+        return "Cukup"
+    else:
+        return "Rendah"
 
 # ===============================
 # PREDIKSI
@@ -98,40 +108,34 @@ def predict(image_data, model):
 
     if prediction.shape[-1] == 1:
         prob = float(prediction[0][0])
-        THRESHOLD = 0.5  
-
-        if prob >= THRESHOLD:
-            result = CLASS_NAMES[1]
-            confidence = prob * 100
+        if prob >= 0.5:
+            return CLASS_NAMES[1], prob * 100, image
         else:
-            result = CLASS_NAMES[0]
-            confidence = (1 - prob) * 100
+            return CLASS_NAMES[0], (1 - prob) * 100, image
     else:
-        result = CLASS_NAMES[np.argmax(prediction)]
-        confidence = float(np.max(prediction)) * 100
-
-    return result, confidence, image
+        return CLASS_NAMES[np.argmax(prediction)], float(np.max(prediction)) * 100, image
 
 # ===============================
-# EXPANDER
+# PENJELASAN
 # ===============================
 with st.expander("📘 Penjelasan Model"):
     st.write("""
-    Model ini menggunakan arsitektur EfficientNet-B5 yang merupakan bagian dari Convolutional Neural Network (CNN).
-    Model dilatih untuk mengklasifikasikan citra kulit sapi menjadi dua kategori: sehat dan terinfeksi Lumpy Skin Disease (LSD).
+    Model menggunakan EfficientNet-B5 berbasis CNN untuk klasifikasi citra kulit sapi.
     """)
 
 with st.expander("📖 Panduan Penggunaan"):
     st.write("""
     - Gunakan gambar kulit sapi yang jelas
-    - Fokus pada area yang menunjukkan gejala
-    - Hindari gambar blur atau terlalu jauh
+    - Hindari blur
+    - Fokus area gejala
     """)
+
+st.caption("Catatan: Model hanya dilatih pada dataset tertentu, hasil dapat berbeda pada kondisi lapangan.")
 
 st.divider()
 
 # ===============================
-# UPLOAD GAMBAR
+# UPLOAD MULTIPLE
 # ===============================
 uploaded_files = st.file_uploader(
     "Upload maksimal 10 gambar kulit sapi...",
@@ -144,75 +148,87 @@ if uploaded_files:
         st.error("Maksimal 10 gambar!")
         st.stop()
 
-    # PREVIEW SEMUA GAMBAR
     st.subheader("Preview Gambar")
     for i, file in enumerate(uploaded_files):
         st.image(Image.open(file), caption=f"Gambar {i+1}", use_container_width=True)
 
     if model is not None:
         if st.button("Analisis Semua Gambar"):
-            with st.spinner("Sedang mendiagnosis..."):
+            results = []
 
-                results = []
+            progress_bar = st.progress(0)
 
-                for idx, file in enumerate(uploaded_files):
-                    image = Image.open(file)
+            for idx, file in enumerate(uploaded_files):
+                image = Image.open(file)
 
-                    # VALIDASI INPUT
-                    if not is_valid_image(image):
-                        results.append(("Tidak Valid", 0))
-                        continue
+                brightness = np.mean(np.array(image))
+                texture = np.std(np.array(image))
 
-                    label, score, processed_image = predict(image, model)
-                    results.append((label, score))
+                if not is_valid_image(image):
+                    results.append(("Tidak Valid", 0))
+                    continue
 
-                    st.divider()
-                    st.subheader(f"Hasil Gambar {idx+1}")
-
-                    st.image(processed_image, caption="Gambar yang dianalisis", use_container_width=True)
-
-                    st.metric(label="Tingkat Keyakinan", value=f"{score:.2f}%")
-                    st.progress(int(score))
-
-                    if score < 60:
-                        st.warning("Model tidak yakin terhadap hasil ini")
-                    else:
-                        if "LSD" in label:
-                            st.error(f"Hasil: {label}")
-                        else:
-                            st.success(f"Hasil: {label}")
-
-                # ===============================
-                # 📊 RINGKASAN HASIL
-                # ===============================
-                sehat = sum(1 for r in results if "Sehat" in r[0])
-                sakit = sum(1 for r in results if "LSD" in r[0])
-                invalid = sum(1 for r in results if "Tidak Valid" in r[0])
+                label, score, processed_image = predict(image, model)
+                results.append((label, score))
 
                 st.divider()
-                st.subheader("📊 Ringkasan Hasil")
-                st.write(f"Jumlah Sehat: {sehat}")
-                st.write(f"Jumlah Terinfeksi LSD: {sakit}")
-                st.write(f"Tidak Valid: {invalid}")
+                st.markdown(f"## Hasil Gambar {idx+1}")
+
+                st.image(processed_image, caption="Gambar dianalisis", use_container_width=True)
+
+                st.write(f"Brightness: {brightness:.2f}")
+                st.write(f"Texture: {texture:.2f}")
+
+                st.metric("Confidence", f"{score:.2f}%")
+                st.write(f"Level: {confidence_label(score)}")
+
+                st.progress(int(score))
+
+                if score < 60:
+                    st.warning("Model tidak yakin")
+                else:
+                    if "LSD" in label:
+                        st.error(label)
+                    else:
+                        st.success(label)
+
+                progress_bar.progress((idx + 1) / len(uploaded_files))
+
+            # ===============================
+            # RINGKASAN
+            # ===============================
+            sehat = sum(1 for r in results if "Sehat" in r[0])
+            sakit = sum(1 for r in results if "LSD" in r[0])
+            invalid = sum(1 for r in results if "Tidak Valid" in r[0])
+
+            st.divider()
+            st.markdown("## 📊 Ringkasan Keseluruhan")
+
+            df = pd.DataFrame({
+                "Kategori": ["Sehat", "LSD", "Tidak Valid"],
+                "Jumlah": [sehat, sakit, invalid]
+            })
+
+            st.bar_chart(df.set_index("Kategori"))
+
+            st.write(f"Sehat: {sehat}")
+            st.write(f"LSD: {sakit}")
+            st.write(f"Tidak Valid: {invalid}")
 
     else:
-        st.warning("Model belum siap, silakan cek log error.")
+        st.warning("Model belum siap")
 
 st.divider()
 
 # ===============================
-# INFORMASI LSD
+# INFO LSD
 # ===============================
 with st.expander("📚 Tentang Penyakit LSD"):
     st.write("""
-    Lumpy Skin Disease (LSD) adalah penyakit virus pada sapi yang ditandai dengan munculnya benjolan pada kulit,
-    demam, penurunan produksi susu, dan dapat menyebabkan kerugian ekonomi yang signifikan.
+    LSD adalah penyakit virus pada sapi dengan gejala benjolan kulit dan penurunan produksi.
     """)
 
-# ===============================
-# DISCLAIMER
-# ===============================
-st.warning("Hasil prediksi ini hanya sebagai alat bantu dan tidak menggantikan diagnosis dokter hewan.")
+st.warning("Hasil hanya sebagai alat bantu, bukan diagnosis medis.")
 
 st.divider()
 st.caption("© 2026 - Sistem Deteksi LSD Sapi | Skripsi Teknik Elektro")
