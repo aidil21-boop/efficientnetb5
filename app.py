@@ -198,4 +198,4 @@ with st.expander("📚 Tentang Penyakit LSD"):
 st.warning("Hasil prediksi ini hanya sebagai alat bantu dan tidak menggantikan diagnosis dokter hewan.")
 
 st.divider()
-st.caption("© 2026 - Sistem Deteksi LSD Sapi | Skripsi Teknik Informatika")
+st.caption("© 2026 - Sistem Deteksi LSD Sapi | Skripsi Teknik Elektro")
