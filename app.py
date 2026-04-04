@@ -119,9 +119,7 @@ def predict(image_data, model):
 # PENJELASAN
 # ===============================
 with st.expander("📘 Penjelasan Model"):
-    st.write("""
-    Model menggunakan EfficientNet-B5 berbasis CNN untuk klasifikasi citra kulit sapi.
-    """)
+    st.write("Model menggunakan EfficientNet-B5 berbasis CNN untuk klasifikasi citra kulit sapi.")
 
 with st.expander("📖 Panduan Penggunaan"):
     st.write("""
@@ -154,8 +152,8 @@ if uploaded_files:
 
     if model is not None:
         if st.button("Analisis Semua Gambar"):
-            results = []
 
+            results = []
             progress_bar = st.progress(0)
 
             for idx, file in enumerate(uploaded_files):
@@ -164,33 +162,44 @@ if uploaded_files:
                 brightness = np.mean(np.array(image))
                 texture = np.std(np.array(image))
 
-                if not is_valid_image(image):
-                    results.append(("Tidak Valid", 0))
-                    continue
-
-                label, score, processed_image = predict(image, model)
-                results.append((label, score))
-
                 st.divider()
-                st.markdown(f"## Hasil Gambar {idx+1}")
+                st.markdown(f"## 🔍 Hasil Gambar {idx+1}")
 
-                st.image(processed_image, caption="Gambar dianalisis", use_container_width=True)
+                # ===============================
+                # CEK VALIDASI
+                # ===============================
+                if not is_valid_image(image):
 
-                st.write(f"Brightness: {brightness:.2f}")
-                st.write(f"Texture: {texture:.2f}")
+                    st.image(image, caption="Gambar Tidak Valid", use_container_width=True)
 
-                st.metric("Confidence", f"{score:.2f}%")
-                st.write(f"Level: {confidence_label(score)}")
+                    st.error("❌ Gambar tidak valid")
+                    st.write(f"Brightness: {brightness:.2f}")
+                    st.write(f"Texture: {texture:.2f}")
 
-                st.progress(int(score))
+                    results.append(("Tidak Valid", 0))
 
-                if score < 60:
-                    st.warning("Model tidak yakin")
                 else:
-                    if "LSD" in label:
-                        st.error(label)
+                    label, score, processed_image = predict(image, model)
+
+                    st.image(processed_image, caption="Gambar Dianalisis", use_container_width=True)
+
+                    st.write(f"Brightness: {brightness:.2f}")
+                    st.write(f"Texture: {texture:.2f}")
+
+                    st.metric("Confidence", f"{score:.2f}%")
+                    st.write(f"Level: {confidence_label(score)}")
+
+                    st.progress(int(score))
+
+                    if score < 60:
+                        st.warning("Model tidak yakin")
                     else:
-                        st.success(label)
+                        if "LSD" in label:
+                            st.error(label)
+                        else:
+                            st.success(label)
+
+                    results.append((label, score))
 
                 progress_bar.progress((idx + 1) / len(uploaded_files))
 
@@ -224,9 +233,7 @@ st.divider()
 # INFO LSD
 # ===============================
 with st.expander("📚 Tentang Penyakit LSD"):
-    st.write("""
-    LSD adalah penyakit virus pada sapi dengan gejala benjolan kulit dan penurunan produksi.
-    """)
+    st.write("LSD adalah penyakit virus pada sapi dengan gejala benjolan kulit dan penurunan produksi.")
 
 st.warning("Hasil hanya sebagai alat bantu, bukan diagnosis medis.")
 
