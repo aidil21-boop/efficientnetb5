@@ -5,8 +5,9 @@ import numpy as np
 
 st.set_page_config(page_title="Deteksi LSD Sapi", page_icon="🐄")
 
-st.title("🛡️ Deteksi Penyakit LSD Sapi by TA aidil-samudra")
-st.write("Aplikasi ini menggunakan arsitektur MobileNetV3 untuk mengidentifikasi penyakit Lumpy Skin Disease.")
+st.title("🛡️ Deteksi Penyakit LSD Sapi")
+st.write("by Aidil Putra Samudra")
+st.write("Aplikasi ini menggunakan arsitektur EfficientNet-B5 untuk mengidentifikasi penyakit Lumpy Skin Disease.")
 
 @st.cache_resource
 def load_my_model():
