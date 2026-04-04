@@ -5,6 +5,8 @@ import numpy as np
 import requests
 import os
 
+from tensorflow.keras.applications.efficientnet import preprocess_input
+
 st.set_page_config(page_title="Deteksi LSD Sapi", page_icon="🐄")
 
 st.title("🛡️ Deteksi Penyakit LSD Sapi")
@@ -12,13 +14,13 @@ st.write("by Aidil Putra Samudra")
 st.write("Aplikasi ini menggunakan arsitektur EfficientNet-B5 untuk mengidentifikasi penyakit Lumpy Skin Disease.")
 
 # ===============================
-# 🔗 LINK MODEL HUGGING FACE
+# 🔗 LINK MODEL (HUGGING FACE)
 # ===============================
 MODEL_URL = "https://huggingface.co/spaces/samudra19/efficientnetb5/resolve/main/model_lsd_sapi.keras"
 MODEL_PATH = "model_lsd_sapi.keras"
 
 # ===============================
-# 📥 DOWNLOAD MODEL (sekali saja)
+# 📥 DOWNLOAD MODEL
 # ===============================
 def download_model():
     if not os.path.exists(MODEL_PATH):
@@ -34,7 +36,7 @@ def download_model():
     return True
 
 # ===============================
-# 🧠 LOAD MODEL (pakai cache)
+# 🧠 LOAD MODEL
 # ===============================
 @st.cache_resource
 def load_my_model():
@@ -61,21 +63,27 @@ CLASS_NAMES = ['Sehat (Healthy)', 'Terinfeksi LSD (Lumpy Skin)']
 # ===============================
 def predict(image_data, model):
     image = image_data.convert("RGB")
-    image_size = 456
-    image = image.resize((image_size, image_size))
+    image = image.resize((456, 456))  # sesuai EfficientNetB5
 
     img_array = np.array(image)
     img_array = np.expand_dims(img_array, axis=0)
-    img_array = img_array / 255.0
+
+    # 🔥 preprocessing yang BENAR
+    img_array = preprocess_input(img_array)
 
     prediction = model.predict(img_array)
 
+    # ===== DEBUG (boleh dihapus saat final) =====
+    st.write("Debug - Raw prediction:", prediction)
+
     if prediction.shape[-1] == 1:
         prob = float(prediction[0][0])
-        THRESHOLD = 0.50 
+        st.write("Debug - Prob:", prob)
+
+        THRESHOLD = 0.5  
 
         if prob >= THRESHOLD:
-            result = CLASS_NAMES[1] 
+            result = CLASS_NAMES[1]
             confidence = prob * 100
         else:
             result = CLASS_NAMES[0]
