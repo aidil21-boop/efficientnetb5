@@ -74,11 +74,11 @@ def predict(image_data, model):
     prediction = model.predict(img_array)
 
     # ===== DEBUG (boleh dihapus saat final) =====
-    st.write("Debug - Raw prediction:", prediction)
+    # st.write("Debug - Raw prediction:", prediction)
 
     if prediction.shape[-1] == 1:
         prob = float(prediction[0][0])
-        st.write("Debug - Prob:", prob)
+        # st.write("Debug - Prob:", prob)
 
         THRESHOLD = 0.5  
 
