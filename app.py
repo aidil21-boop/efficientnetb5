@@ -129,16 +129,23 @@ if uploaded_file is not None:
                 st.subheader("Hasil Prediksi")
                 st.progress(int(score))
 
+                # ===============================
+                # 🚨 VALIDASI INPUT (TAMBAHAN PENTING)
+                # ===============================
                 if score < 60:
-                    st.warning("Model memiliki tingkat keyakinan rendah terhadap hasil ini.")
-
-                if "LSD" in label:
-                    st.error(f"Hasil: {label}")
-                    st.warning(f"Tingkat Keyakinan: {score:.2f}%")
-                    st.write("Saran: Segera hubungi dokter hewan dan pisahkan sapi dari kelompoknya.")
+                    st.error("Gambar tidak valid atau bukan kulit sapi.")
+                    st.warning("Model tidak cukup yakin untuk memberikan prediksi yang akurat.")
+                    st.info("Silakan upload gambar kulit sapi yang lebih jelas dan sesuai.")
+                
                 else:
-                    st.success(f"Hasil: {label}")
-                    st.info(f"Tingkat Keyakinan: {score:.2f}%")
+                    if "LSD" in label:
+                        st.error(f"Hasil: {label}")
+                        st.warning(f"Tingkat Keyakinan: {score:.2f}%")
+                        st.write("Saran: Segera hubungi dokter hewan dan pisahkan sapi dari kelompoknya.")
+                    else:
+                        st.success(f"Hasil: {label}")
+                        st.info(f"Tingkat Keyakinan: {score:.2f}%")
+
     else:
         st.warning("Model belum siap, silakan cek log error.")
 
