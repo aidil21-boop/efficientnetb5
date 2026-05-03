@@ -119,14 +119,34 @@ def predict(image_data, model):
 # PENJELASAN
 # ===============================
 with st.expander("📘 Penjelasan Model"):
-    st.write("Model menggunakan EfficientNet-B5 berbasis CNN untuk klasifikasi citra kulit sapi.")
+    st.write("Aplikasi ini menggunakan model Convolutional Neural Network (CNN) dengan arsitektur EfficientNet-B5 
+    yang telah dilatih untuk mengklasifikasikan citra kulit sapi. Model bekerja dengan mengekstraksi fitur visual 
+    seperti tekstur kulit, pola nodul, dan perubahan warna yang berkaitan dengan penyakit Lumpy Skin Disease (LSD). 
+
+    EfficientNet-B5 dipilih karena memiliki kemampuan optimasi pada kedalaman, lebar, dan resolusi jaringan, 
+    sehingga mampu menghasilkan akurasi yang lebih baik dibandingkan model CNN konvensional.
+")
 
 with st.expander("📖 Panduan Penggunaan"):
     st.write("""
-    - Gunakan gambar kulit sapi yang jelas
-    - Hindari blur
-    - Fokus area gejala
-    - Sistem dirancang khusus untuk mengklasifikasikan citra kulit sapi, sehingga input berupa objek selain sapi dapat menghasilkan prediksi yang tidak valid
+   - Gunakan gambar kulit sapi yang jelas dan tidak blur
+    - Pastikan pencahayaan cukup (tidak terlalu gelap atau terang)
+    - Fokus pada area kulit yang menunjukkan gejala
+    - Hindari penggunaan gambar dengan banyak objek atau latar belakang kompleks
+
+    Batasan Sistem:
+    - Sistem hanya dirancang untuk citra kulit sapi
+    - Gambar selain sapi dapat menghasilkan prediksi yang tidak valid
+    - Model hanya mengenali pola berdasarkan data latih, sehingga kondisi lapangan yang berbeda 
+      dapat mempengaruhi hasil prediksi
+    """)
+with st.expander("⚙️ Cara Kerja Sistem"):
+    st.write("""
+    1. Gambar diunggah oleh pengguna
+    2. Sistem melakukan preprocessing (resize dan normalisasi)
+    3. Model EfficientNet-B5 mengekstraksi fitur dari citra
+    4. Sistem melakukan klasifikasi (Sehat atau Terindikasi LSD)
+    5. Hasil ditampilkan dalam bentuk label dan nilai confidence
     """)
 
 st.caption("Catatan: Model hanya dilatih pada dataset tertentu, hasil dapat berbeda pada kondisi lapangan.")
