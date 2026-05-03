@@ -218,6 +218,12 @@ if uploaded_files:
                     else:
                         if "LSD" in label:
                             st.error(label)
+                            st.warning("""
+        ⚠️ Tindakan Disarankan:
+        - Segera hubungi dokter hewan
+        - Pisahkan sapi yang terindikasi dari kawanan untuk mencegah penyebaran
+        - Lakukan observasi lanjutan terhadap gejala klinis
+        """)
                         else:
                             st.success(label)
 
