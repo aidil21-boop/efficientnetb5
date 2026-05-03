@@ -8,9 +8,9 @@ import pandas as pd
 
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
-st.set_page_config(page_title="Deteksi LSD Sapi", page_icon="🐄")
+st.set_page_config(page_title="Klasifikasi LSD Sapi", page_icon="🐄")
 
-st.title("🛡️ Deteksi Penyakit LSD Sapi")
+st.title("🛡️ Klasifikasi Penyakit LSD Sapi")
 st.caption("by Aidil Putra Samudra")
 st.write("Aplikasi ini menggunakan arsitektur EfficientNet-B5 untuk mengidentifikasi penyakit Lumpy Skin Disease.")
 
@@ -66,7 +66,7 @@ st.divider()
 # ===============================
 # LABEL
 # ===============================
-CLASS_NAMES = ['Sehat (Healthy)', 'Terinfeksi LSD (Lumpy Skin)']
+CLASS_NAMES = ['Sehat (Healthy)', 'Terindikasi LSD (Lumpy Skin)']
 
 # ===============================
 # VALIDASI INPUT
@@ -126,6 +126,7 @@ with st.expander("📖 Panduan Penggunaan"):
     - Gunakan gambar kulit sapi yang jelas
     - Hindari blur
     - Fokus area gejala
+    - Sistem dirancang khusus untuk mengklasifikasikan citra kulit sapi, sehingga input berupa objek selain sapi dapat menghasilkan prediksi yang tidak valid
     """)
 
 st.caption("Catatan: Model hanya dilatih pada dataset tertentu, hasil dapat berbeda pada kondisi lapangan.")
@@ -233,7 +234,7 @@ st.divider()
 # INFO LSD
 # ===============================
 with st.expander("📚 Tentang Penyakit LSD"):
-    st.write("LSD adalah penyakit virus pada sapi dengan gejala benjolan kulit dan penurunan produksi.")
+    st.write("Lumpy Skin Disease (LSD) adalah penyakit infeksius pada sapi yang disebabkan oleh virus dari genus Capripoxvirus, ditandai dengan munculnya benjolan (nodul) pada kulit, demam, penurunan nafsu makan, serta penurunan produksi susu dan kondisi tubuh. Penyakit ini menyebar terutama melalui gigitan serangga seperti lalat dan nyamuk, serta dapat menyebabkan kerugian ekonomi yang signifikan pada peternak. Meskipun jarang menyebabkan kematian, LSD berdampak serius pada kesehatan ternak dan produktivitas, sehingga memerlukan pengendalian melalui vaksinasi, pengendalian vektor, dan biosekuriti yang baik.")
 
 st.warning("Hasil hanya sebagai alat bantu, bukan diagnosis medis.")
 
