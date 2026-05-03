@@ -119,13 +119,14 @@ def predict(image_data, model):
 # PENJELASAN
 # ===============================
 with st.expander("📘 Penjelasan Model"):
-    st.write("Aplikasi ini menggunakan model Convolutional Neural Network (CNN) dengan arsitektur EfficientNet-B5 
+    st.write("""
+    Aplikasi ini menggunakan model Convolutional Neural Network (CNN) dengan arsitektur EfficientNet-B5 
     yang telah dilatih untuk mengklasifikasikan citra kulit sapi. Model bekerja dengan mengekstraksi fitur visual 
     seperti tekstur kulit, pola nodul, dan perubahan warna yang berkaitan dengan penyakit Lumpy Skin Disease (LSD). 
 
     EfficientNet-B5 dipilih karena memiliki kemampuan optimasi pada kedalaman, lebar, dan resolusi jaringan, 
     sehingga mampu menghasilkan akurasi yang lebih baik dibandingkan model CNN konvensional.
-")
+    """)
 
 with st.expander("📖 Panduan Penggunaan"):
     st.write("""
